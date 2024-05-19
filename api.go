@@ -11,12 +11,13 @@ import (
 
 type ApiServer struct {
 	Addr string
+	Db Db
 }
 
 type apifunc func(http.ResponseWriter, *http.Request) error
 
 type ApiError struct {
-	Error string
+	Error string `json:"error"`
 }
 
 func writeJson(w http.ResponseWriter, statusCode int, v any) error {
@@ -33,9 +34,10 @@ func httpHandleFunc(f apifunc) http.HandlerFunc {
 	}
 }
 
-func NewApiServer(addr string) *ApiServer {
+func NewApiServer(addr string, db Db) *ApiServer {
 	return &ApiServer{
 		Addr: addr,
+		Db: db,
 	}
 }
 
