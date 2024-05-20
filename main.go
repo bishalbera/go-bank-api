@@ -1,5 +1,13 @@
 package main
+
+import "log"
 func main() {
-	server := NewApiServer(":8000")
+
+	db, err:= CreateDb()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	server := NewApiServer(":8000", db)
 	server.Run()
 }
