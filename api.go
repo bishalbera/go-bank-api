@@ -11,7 +11,7 @@ import (
 
 type ApiServer struct {
 	Addr string
-	Db Db
+	Db   Db
 }
 
 type apifunc func(http.ResponseWriter, *http.Request) error
@@ -37,7 +37,7 @@ func httpHandleFunc(f apifunc) http.HandlerFunc {
 func NewApiServer(addr string, db Db) *ApiServer {
 	return &ApiServer{
 		Addr: addr,
-		Db: db,
+		Db:   db,
 	}
 }
 
@@ -63,15 +63,25 @@ func (s *ApiServer) handleAccount(wr http.ResponseWriter, r *http.Request) error
 }
 
 func (s *ApiServer) handleGetAccount(wr http.ResponseWriter, r *http.Request) error {
-	account:= NewAccount("Bishal", "Bera")
-	return writeJson(wr,http.StatusOK, account)
+	account := NewAccount("Bishal", "Bera")
+	return writeJson(wr, http.StatusOK, account)
 }
 
 func (s *ApiServer) handleCreateAccount(wr http.ResponseWriter, r *http.Request) error {
-	return nil
+	createAccReq := new(CreateAccountReq)
+
+	if err := json.NewDecoder(r.Body).Decode(createAccReq); err != nil {
+		return err
+	}
+	account := NewAccount(createAccReq.FirstName, createAccReq.LastName)
+
+	if err := s.Db.CreateAccount(account); err != nil {
+		return err
+	}
+
+	return writeJson(wr, http.StatusOK, account)
 }
 
 func (s *ApiServer) handleDeleteAccount(wr http.ResponseWriter, r *http.Request) error {
 	return nil
 }
-

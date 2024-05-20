@@ -20,7 +20,7 @@ func CreateDb() (*Postgres, error) {
 
 	connstr := "user=postgres dbname=postgres password=gobank sslmode=disable"
 	db, err := sql.Open("postgres", connstr)
- 
+
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,36 @@ func CreateDb() (*Postgres, error) {
 	}, nil
 }
 
-func (pg *Postgres) CreateAccount(*Account) error {
+func (pg *Postgres) Init() error {
+	return pg.createAccountTable()
+}
+
+func (pg *Postgres) createAccountTable() error {
+	query := `CREATE TABLE IF NOT EXISTS account (
+		id serial primary key,
+		balance float,
+		first_name varchar(50),
+		last_name varchar(50),
+		number int,
+		created_at timestamp
+	)`
+	_, err := pg.db.Exec(query)
+	return err
+}
+
+func (pg *Postgres) CreateAccount(acc *Account) error {
+	sqlQuery := `INSERT INTO account (
+		first_name, 
+		last_name,
+		balance,
+		number, 
+		created_at
+	) VALUES($1, $2, $3, $4, $5)`
+
+	_, err := pg.db.Query(sqlQuery, acc.FirstName, acc.LastName, acc.Balance, acc.Number, acc.CreatedAt)
+	if err != nil {
+		panic(err)
+	}
 	return nil
 }
 
