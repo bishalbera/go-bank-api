@@ -52,7 +52,7 @@ func (s *ApiServer) Run() {
 func (s *ApiServer) handleAccount(wr http.ResponseWriter, r *http.Request) error {
 	switch r.Method {
 	case "GET":
-		return s.handleGetAccount(wr, r)
+		return s.handleGetAccounts(wr, r)
 	case "POST":
 		return s.handleCreateAccount(wr, r)
 	case "DELETE":
@@ -62,9 +62,15 @@ func (s *ApiServer) handleAccount(wr http.ResponseWriter, r *http.Request) error
 	}
 }
 
-func (s *ApiServer) handleGetAccount(wr http.ResponseWriter, r *http.Request) error {
-	account := NewAccount("Bishal", "Bera")
+func (s *ApiServer) handleGetAccounts(wr http.ResponseWriter, r *http.Request) error {
+	account, err := s.Db.GetAccounts()
+
+	if err!= nil {
+		return err
+	}
+
 	return writeJson(wr, http.StatusOK, account)
+	
 }
 
 func (s *ApiServer) handleCreateAccount(wr http.ResponseWriter, r *http.Request) error {

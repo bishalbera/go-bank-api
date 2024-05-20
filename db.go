@@ -10,6 +10,7 @@ type Db interface {
 	CreateAccount(*Account) error
 	DeleteAccount(int) error
 	GetAccountByID(int) (*Account, error)
+	GetAccounts() ([]*Account, error)
 }
 
 type Postgres struct {
@@ -72,4 +73,36 @@ func (pg *Postgres) DeleteAccount(id int) error {
 
 func (pg *Postgres) GetAccountByID(id int) (*Account, error) {
 	return nil, nil
+}
+
+func (pg *Postgres) GetAccounts() ([]*Account, error) {
+	rows, err := pg.db.Query("SELECT id, first_name, last_name, balance, number, created_at FROM account")
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	accounts := []*Account{}
+
+	for rows.Next() {
+		account := new(Account)
+		err := rows.Scan(
+			&account.ID,
+			&account.FirstName,
+			&account.LastName,
+			&account.Balance,
+			&account.Number,
+			&account.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+		accounts = append(accounts, account)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return accounts, nil
+
 }
