@@ -69,19 +69,26 @@ func (pg *Postgres) CreateAccount(acc *Account) error {
 }
 
 func (pg *Postgres) DeleteAccount(id int) error {
+	query := "DELETE FROM account WHERE id = $1"
+
+	_, err := pg.db.Exec(query, id)
+
+	if err != nil {
+		return fmt.Errorf("account not found with id %d", id)
+	}
+
 	return nil
 }
 
 func (pg *Postgres) GetAccountByID(id int) (*Account, error) {
-	query:= "SELECT id, first_name, last_name, balance, number, created_at FROM account WHERE id = $1"
+	query := "SELECT id, first_name, last_name, balance, number, created_at FROM account WHERE id = $1"
 
-
-	acc, err:= getRows(pg, query, id)
-	if err!= nil {
+	acc, err := getRows(pg, query, id)
+	if err != nil {
 		return nil, err
 	}
 	if len(acc) == 0 {
-		return nil, fmt.Errorf("no account found with id %d",id )
+		return nil, fmt.Errorf("no account found with id %d", id)
 	}
 
 	return acc[0], nil
@@ -91,33 +98,6 @@ func (pg *Postgres) GetAccounts() ([]*Account, error) {
 	query := "SELECT id, first_name, last_name, balance, number, created_at FROM account"
 
 	return getRows(pg, query)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer rows.Close()
-	// accounts := []*Account{}
-
-	// for rows.Next() {
-	// 	account := new(Account)
-	// 	err := rows.Scan(
-	// 		&account.ID,
-	// 		&account.FirstName,
-	// 		&account.LastName,
-	// 		&account.Balance,
-	// 		&account.Number,
-	// 		&account.CreatedAt,
-	// 	)
-
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	accounts = append(accounts, account)
-	// }
-	// if err := rows.Err(); err != nil {
-	// 	return nil, err
-	// }
-	// return accounts, nil
 
 }
 
