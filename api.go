@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -44,6 +45,8 @@ func NewApiServer(addr string, db Db) *ApiServer {
 func (s *ApiServer) Run() {
 	router := mux.NewRouter()
 	router.HandleFunc("/account", httpHandleFunc(s.handleAccount)).Methods("GET", "POST", "DELETE")
+	
+	router.HandleFunc("/account/{id}", httpHandleFunc(s.handleGetAccountByID)).Methods("GET")
 
 	log.Println("Server is running on port :", s.Addr)
 	http.ListenAndServe(s.Addr, router)
@@ -60,6 +63,24 @@ func (s *ApiServer) handleAccount(wr http.ResponseWriter, r *http.Request) error
 	default:
 		return fmt.Errorf("method not allowed %s", r.Method)
 	}
+}
+
+func (s *ApiServer) handleGetAccountByID(wr http.ResponseWriter, r *http.Request) error {
+
+	idstr:= mux.Vars(r)["id"]
+	id, err:=strconv.Atoi(idstr)
+
+	if err!= nil {
+		return  fmt.Errorf("invalid id given %s", idstr)
+	}
+
+	acc, err:= s.Db.GetAccountByID(id)
+
+	if err!= nil{
+		return err
+	}
+	return writeJson(wr,http.StatusOK, acc)
+
 }
 
 func (s *ApiServer) handleGetAccounts(wr http.ResponseWriter, r *http.Request) error {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/lib/pq"
 )
@@ -72,15 +73,62 @@ func (pg *Postgres) DeleteAccount(id int) error {
 }
 
 func (pg *Postgres) GetAccountByID(id int) (*Account, error) {
-	return nil, nil
+	query:= "SELECT id, first_name, last_name, balance, number, created_at FROM account WHERE id = $1"
+
+
+	acc, err:= getRows(pg, query, id)
+	if err!= nil {
+		return nil, err
+	}
+	if len(acc) == 0 {
+		return nil, fmt.Errorf("no account found with id %d",id )
+	}
+
+	return acc[0], nil
 }
 
 func (pg *Postgres) GetAccounts() ([]*Account, error) {
-	rows, err := pg.db.Query("SELECT id, first_name, last_name, balance, number, created_at FROM account")
+	query := "SELECT id, first_name, last_name, balance, number, created_at FROM account"
+
+	return getRows(pg, query)
+
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// defer rows.Close()
+	// accounts := []*Account{}
+
+	// for rows.Next() {
+	// 	account := new(Account)
+	// 	err := rows.Scan(
+	// 		&account.ID,
+	// 		&account.FirstName,
+	// 		&account.LastName,
+	// 		&account.Balance,
+	// 		&account.Number,
+	// 		&account.CreatedAt,
+	// 	)
+
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	accounts = append(accounts, account)
+	// }
+	// if err := rows.Err(); err != nil {
+	// 	return nil, err
+	// }
+	// return accounts, nil
+
+}
+
+func getRows(pg *Postgres, query string, args ...interface{}) ([]*Account, error) {
+
+	rows, err := pg.db.Query(query, args...)
 
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	accounts := []*Account{}
 
@@ -100,9 +148,5 @@ func (pg *Postgres) GetAccounts() ([]*Account, error) {
 		}
 		accounts = append(accounts, account)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return accounts, nil
-
+	return accounts, err
 }
